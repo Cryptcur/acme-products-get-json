@@ -1,0 +1,72 @@
+<html>
+  <head>
+    <script
+      src="https://unpkg.com/react@16/umd/react.development.js"
+      crossorigin
+    ></script>
+    <script
+      src="https://unpkg.com/react-dom@16/umd/react-dom.development.js"
+      crossorigin
+    ></script>
+    <script src="https://unpkg.com/babel-standalone@6/babel.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/0.19.2/axios.js"></script>
+    <style>
+      * {
+        box-sizing: border-box;
+      }
+      .productBox {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        border: solid 1px black;
+        padding: 1rem;
+        border-radius: 20px;
+        margin: 1rem;
+        width: calc(100% / 3 - 2rem);
+        background-color: dodgerblue;
+        color: white;
+      }
+      #products {
+        display: flex;
+        flex-wrap: wrap;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>My React App</h1>
+    <div id="root"></div>
+    <script type="text/babel">
+      class App extends React.Component {
+        constructor() {
+          super();
+          this.state = {
+            products: []
+          };
+        }
+        async componentDidMount() {
+          const products = (await axios.get("/api/products")).data;
+          this.setState({ products });
+        }
+
+        render() {
+          const { products } = this.state;
+          console.log(products);
+          return (
+            <main id="products">
+              {products.map(product => (
+                <div key={product.id} className="productBox">
+                  <div>
+                    <strong>{product.name.toUpperCase()}</strong>
+                  </div>
+                  <div>{product.description}</div>
+                  <div>${product.suggestedPrice.toFixed(2)}</div>
+                </div>
+              ))}
+            </main>
+          );
+        }
+      }
+      ReactDOM.render(<App />, document.querySelector("#root"));
+    </script>
+  </body>
+</html>
