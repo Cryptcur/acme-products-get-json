@@ -36,33 +36,74 @@
     <h1>My React App</h1>
     <div id="root"></div>
     <script type="text/babel">
+      class Form extends React.Component {
+        constructor() {
+          super();
+          this.state = {
+            newProduct: ""
+          };
+        }
+
+        create = () => {
+          const { newProduct } = this.state;
+          this.props.create(newProduct);
+        };
+
+        render() {
+          const { newProduct } = this.state;
+          const { create } = this;
+          return (
+            <form onSubmit={event => event.preventDefault()}>
+              <input
+                onChange={event =>
+                  this.setState({ newProduct: event.target.value })
+                }
+              ></input>
+              <button onClick={create}>Submit</button>
+            </form>
+          );
+        }
+      }
+
       class App extends React.Component {
         constructor() {
           super();
           this.state = {
-            products: []
+            products: [],
+            companies: []
           };
+          this.create = this.create.bind(this);
         }
         async componentDidMount() {
           const products = (await axios.get("/api/products")).data;
-          this.setState({ products });
+          const companies = (await axios.get("/api/companies")).data;
+          this.setState({ products, companies });
+        }
+
+        async create(newProd) {
+          const created = (await axios.post("/api/products", { newProd })).data;
+          this.setState({ products: [...products, created] });
         }
 
         render() {
-          const { products } = this.state;
-          console.log(products);
+          const { products, companies } = this.state;
+          const { create } = this;
+          console.log(companies);
           return (
-            <main id="products">
-              {products.map(product => (
-                <div key={product.id} className="productBox">
-                  <div>
-                    <strong>{product.name.toUpperCase()}</strong>
+            <div>
+              <main id="products">
+                {products.map(product => (
+                  <div key={product.id} className="productBox">
+                    <div>
+                      <strong>{product.name.toUpperCase()}</strong>
+                    </div>
+                    <div>{product.description}</div>
+                    <div>${product.suggestedPrice.toFixed(2)}</div>
                   </div>
-                  <div>{product.description}</div>
-                  <div>${product.suggestedPrice.toFixed(2)}</div>
-                </div>
-              ))}
-            </main>
+                ))}
+              </main>
+              <Form create={create} />
+            </div>
           );
         }
       }
